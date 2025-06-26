@@ -1,26 +1,38 @@
 "use client";
 
-import { useForm, SubmitHandler } from "react-hook-form"
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
+const schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
 
-interface IFormInput {
-  firstName: string
-  lastName: string
-  age: number
-}
+type FormData = z.infer<typeof schema>;
 
+export default function LoginForm() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
 
-export default function App() {
-  const { register, handleSubmit } = useForm<IFormInput>()
-  const onSubmit: SubmitHandler<IFormInput> = (data) => console.log(data)
-
+  const onSubmit = (data: FormData) => {
+    console.log("Form Submitted:", data);
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <input className="bg-input" {...register("firstName", { required: true, maxLength: 20 })} />
-      <input {...register("lastName", { pattern: /^[A-Za-z]+$/i })} />
-      <input type="number" {...register("age", { min: 18, max: 99 })} />
-      <input type="submit" />
+      <input {...register("email")} />
+      {errors.email && <p>{errors.email.message}</p>}
+
+      <input type="password" {...register("password")} />
+      {errors.password && <p>{errors.password.message}</p>}
+
+      <button type="submit">Login</button>
     </form>
-  )
+  );
 }
